@@ -35,4 +35,24 @@ public class Logger {
     public static void info(string what){
         Console.WriteLine(what);
     }
+
+    public static void log(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+
+    }
+    public static void error(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+    }
+    public static void warn(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+    }
+    public static void verbose(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+    }
+    public static void debug(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+    }
+    public static void info(string what, params string[] values){
+        Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
+    }
 }
