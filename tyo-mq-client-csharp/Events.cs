@@ -31,7 +31,7 @@ namespace tyo_mq_client_csharp;
         }
 
         public string to_onunsubscribe_event(Events cls, string event_name, string id) {
-            eventStr = cls.to_event_string(sevent_name);
+            string eventStr = cls.to_event_string(event_name);
             return "UNSUBSCRIBE-" + eventStr + "-" + id;
 
         }
