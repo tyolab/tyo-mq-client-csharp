@@ -3,11 +3,15 @@ namespace tyo_mq_client_csharp;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-public class Publiser: Subscriber {
+public class Publisher: Subscriber {
 
     private Dictionary<string, Subscriber> subscribers;
 
-    public Publiser(string name, string eventDefault, string host, int port, string protocol) : base(name, host, port, protocol) {
+    private string eventDefault;
+
+    private Delegate? on_subscription_listener;
+
+    public Publisher(string name, string eventDefault, string host, int port, string protocol) : base(name, host, port, protocol) {
 
         this.type = "PRODUCER";
         this.eventDefault = eventDefault != null? eventDefault : Constants.EVENT_DEFAULT;
@@ -47,7 +51,7 @@ public class Publiser: Subscriber {
     /**
      * On Subscribe
      */
-    public void __on_subscription (object data)  {
+    private void __on_subscription (object data)  {
         Logger.log("Received subscription information: " + JsonSerializer.Serialize(data));
 
         this.subscribers[data["id"]] = data;
@@ -67,7 +71,7 @@ public class Publiser: Subscriber {
      */
     public void __on_lost_subscriber (Delegate callback, object data)  {
         Logger.log("Lost subscriber\"s connection");
-        if (callback is not null) {
+        if (callback != null) {
             callback.DynamicInvoke(new object[] { data });
         }
     }
@@ -86,7 +90,7 @@ public class Publiser: Subscriber {
      * On Unsubsribe
      */
     public void __on_unsubscribed (Delegate callback, object data) {
-        if (callback is not null) {
+        if (callback != null) {
            callback.DynamicInvoke(new object[] { data });
         }
     }

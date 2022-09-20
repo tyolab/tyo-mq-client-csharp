@@ -36,6 +36,57 @@ public class Logger {
         Console.WriteLine(what);
     }
 
+    public static void log(string what, object details){
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+
+    public static void error(string what, object details) {
+        Console.Error.WriteLine(what);
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+    public static void warn(string what, object details) {
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+    public static void verbose(string what, object details) {
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+    public static void debug(string what, object details) {
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+    public static void info(string what, object details) {
+        if (details != null) {
+            Console.WriteLine("[" + what + "]: " + details.ToString());
+        }
+        else {
+            Console.WriteLine(what);
+        }
+    }
+
     public static void log(string what, params string[] values){
         Console.WriteLine("[" + what + "]: " + string.Join(" ", values));
 

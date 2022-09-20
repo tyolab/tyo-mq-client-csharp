@@ -1,5 +1,5 @@
 namespace tyo_mq_client_csharp;
-public class MessageQueue(object) {
+public class MessageQueue {
     private string host;
 
     private int port;
@@ -31,16 +31,16 @@ public class MessageQueue(object) {
         this.protocol = protocol;
     }          
 
-    public createSocket(string host, int port, string protocol) {
-        Socket mySocket = new Socket(host != null ? host : this.host, port != null ? port : this.port, protocol != null ? protocol : this.protocol);
+    public Socket createSocket(string host, int port, string protocol) {
+        Socket mySocket = new Socket(host != null ? host : this.host, port > 0 ? port : this.port, protocol != null ? protocol : this.protocol);
         return mySocket;
     }
 
     /**
      #* private function
      #*/
-    public Subscriber __createConsumerPrivate(string name, string host, int port, string protocol) {
-        Subscriber consumer = new Subscriber(name, host != null ? host : this.host, port != null ? port : this.port, protocol != null ? protocol : this.protocol);
+    private Subscriber __createConsumerPrivate(string name, string host, int port, string protocol) {
+        Subscriber consumer = new Subscriber(name, host != null ? host : this.host, port > 0 ? port : this.port, protocol != null ? protocol : this.protocol);
         return consumer;
     }
 
@@ -55,13 +55,13 @@ public class MessageQueue(object) {
      * Alias of createConsumer
      */
 
-    public Publiser createSubscriber(string name, string host, int port, string protocol) {
+    public Subscriber createSubscriber(string name, string host, int port, string protocol) {
         return this.createConsumer(name, host, port, protocol);
     }
 
-    public Publisher __createProducerPrivate (string name, string eventDefault, string host, int port, string protocol) {
+    private Publisher __createProducerPrivate (string name, string eventDefault, string host, int port, string protocol) {
         string h = host != null ? host : this.host;
-        string p = port != null ? port : this.port;
+        int p = port > 0 ? port : this.port;
         string ptc = protocol != null ? protocol : this.protocol;
 
         Publisher producer = new Publisher(name, eventDefault, h, p, ptc);
@@ -77,5 +77,5 @@ public class MessageQueue(object) {
 
     public Publisher createPublisher (string name, string eventDefault, string host, int port, string protocol) {
         return this.createProducer(name, eventDefault, host, port, protocol);
-}   }
+    }
 }
