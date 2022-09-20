@@ -25,7 +25,7 @@ public class Subscriber: Socket {
     }
 
     private void __apply_subscritptions() {
-        if (this.__apply_subscritptions != null && this.subscriptions.Length > 0) {
+        if (this.__apply_subscritptions != null && this.subscriptions.Count > 0) {
             // map(lambda func : func(), this.subscriptions);
             // del this.subscriptions
             if (this.subscriptions != null) {

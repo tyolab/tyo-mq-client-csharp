@@ -95,7 +95,7 @@ public class Socket {
     }
 
     private void __apply_on_events () {
-        if (this.on_event_func_list != null && this.on_event_func_list.Length > 0) {
+        if (this.on_event_func_list != null && this.on_event_func_list.Count > 0) {
             // map(lambda func : func(), this.on_event_func_list)
             // del this.on_event_func_list
             if (this.on_event_func_list != null) {
