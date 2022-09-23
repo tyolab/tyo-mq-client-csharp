@@ -100,7 +100,7 @@ public class Socket {
             // del this.on_event_func_list
             if (this.on_event_func_list != null) {
                 foreach (Delegate func in this.on_event_func_list) {
-                    func();
+                    func.DynamicInvoke();
                 }
                 this.on_event_func_list.Clear();
                 this.on_event_func_list = null;
@@ -109,21 +109,23 @@ public class Socket {
     }
 
     public void send_identification_info() {
-        this.send_message(this.type, "{'name': " + this.name + ", 'id': " + this.get_id() + "}");
+        this.send_message(this.type, "{'name': " + this.name + ", 'id': " + this.id + "}");
     }
 
     public void on_connect(object response) {
         Logger.log("connected to message queue server", response);
 
         this.connected = true;
-        this.socket.On("ERROR", this.__on_error__);
+        this.socket.On("ERROR", response => {
+            __on_error__();
+        });
 
         this.send_identification_info();
 
-        i = 0;
-        while (i < len(this.on_connect_listeners)) {
+        int i = 0;
+        while (i < this.on_connect_listeners.Count) {
             listener = this.on_connect_listeners[i]; 
-            listener();
+            listener.DynamicInvoke();
             i += 1;
         }
     }
@@ -131,7 +133,7 @@ public class Socket {
     public void on_disconnect(object message) {
         this.connected = false;
         // #Logger.debug('disconnect')
-        Logger.log("Socket (" + this.get_id() + ") is disconnected", message);
+        Logger.log("Socket (" + this.id + ") is disconnected", message);
     }
 
     public void on_reconnect(object message) {
@@ -147,7 +149,7 @@ public class Socket {
     // #
     public void __on_error__(object msg) {
         if (this.on_error_listener != null){
-            this.on_error_listener();
+            this.on_error_listener.DynamicInvoke();
         }
         else{
             Logger.error("Error", msg);
@@ -167,7 +169,7 @@ public class Socket {
         this.socket.On("connect", response => {
             this.on_connect(response);
             if (callback != null) {
-                callback(response);
+                callback.DynamicInvoke(new object[] {response} );
             }
         });
         this.socket.On("disconnect", message => {
@@ -193,7 +195,7 @@ public class Socket {
 
     public void disconnect() {
         if (this.socket != null && this.connected)
-            this.socket.disconnect();
+            this.socket.Disconnect();
     }
 
     public void on(string eventName, Delegate callback) {

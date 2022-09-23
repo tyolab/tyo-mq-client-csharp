@@ -30,7 +30,7 @@ public class Subscriber: Socket {
             // del this.subscriptions
             if (this.subscriptions != null) {
                 foreach (Delegate func in this.subscriptions) {
-                    func();
+                    func.DynamicInvoke();
                 }
                 this.subscriptions.Clear();
                 this.subscriptions = null;
@@ -40,7 +40,7 @@ public class Subscriber: Socket {
 
     private void __trigger_consume_event(Dictionary<string, object> obj, string eventStr, Delegate callback)  {
         // if obj["eventName"] == eventStr 
-        object data = obj.get("message");
+        object data = obj["message"];
         if (callback != null) {
             callback.DynamicInvoke(new object[] { data });
         }

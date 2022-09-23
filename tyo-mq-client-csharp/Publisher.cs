@@ -62,7 +62,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_subscription_listener () {
-        String eventName = Events.to_onsubscribe_event(this.get_id());
+        String eventName = Events.to_onsubscribe_event(this.id);
         this.on(eventName, this.__on_subscription);
     }
 
@@ -77,7 +77,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_subscriber_lost_listener (Delegate callback)  {
-        string eventName = Events.to_ondisconnect_event(this.get_id());
+        string eventName = Events.to_ondisconnect_event(this.id);
         // futureFunc = lambda data : (lambda data, cb=callback : this.__on_lost_subscriber(cb, data))(data)
         this.on(eventName, callback);
     }
@@ -96,7 +96,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_unsubscribed_listener (string eventName, Delegate callback)  {
-        string eventName = Events.to_onunsubscribe_event(eventName, this.get_id());
+        string eventName = Events.to_onunsubscribe_event(eventName, this.id);
         // futureFunc = lambda data : (lambda data, cb=callback: this.__on_unsubscribed(cb, data))(data)
         this.on(eventName, callback);
     }
