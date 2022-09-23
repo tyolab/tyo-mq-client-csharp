@@ -190,12 +190,12 @@ public class Socket {
     // }
 
     public void add_on_connect_listener(Delegate listener) {
-        this.on_connect_listeners.add(listener);
+        this.on_connect_listeners.Add(listener);
     }
 
     public void disconnect() {
         if (this.socket != null && this.connected)
-            this.socket.Disconnect();
+            this.socket.InvokeDisconnect(DisconnectReason.IOClientDisconnect);
     }
 
     public void on(string eventName, Delegate callback) {

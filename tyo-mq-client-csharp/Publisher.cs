@@ -51,14 +51,14 @@ public class Publisher: Subscriber {
     /**
      * On Subscribe
      */
-    private void __on_subscription (object data)  {
-        Logger.log("Received subscription information: " + JsonSerializer.Serialize(data));
+    private void __on_subscription (string data)  {
+        Logger.log("Received subscription information: " + /* JsonSerializer.Serialize */(data));
 
         this.subscribers[data["id"]] = data;
 
         // further listener
         if (this.on_subscription_listener != null) 
-            this.on_subscription_listener(data);
+            this.on_subscription_listener.DynamicInvoke(new object[] { data });
     }
 
     public void set_on_subscription_listener () {
