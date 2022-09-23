@@ -3,9 +3,23 @@ namespace tyo_mq_client_csharp;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/**
+ * Publisher
+ * =========
+ * Publisher could maintain a copy of the subscription list
+ * - types:
+ *         * free
+ *         * paid membership
+ *         
+ *   subscription:
+ *         * name
+ *         * type
+ *         * id
+ *         * token  // secret, for authentication
+ */
 public class Publisher: Subscriber {
 
-    private Dictionary<string, Subscriber> subscribers;
+    private HashSet<string> subscribers;
 
     private string eventDefault;
 
@@ -16,7 +30,7 @@ public class Publisher: Subscriber {
         this.type = "PRODUCER";
         this.eventDefault = eventDefault != null? eventDefault : Constants.EVENT_DEFAULT;
         this.on_subscription_listener = null;
-        this.subscribers = new Dictionary<string, Subscriber>();
+        this.subscribers = new HashSet<string>();
 
         // Initialisation
         // futureFunc = lambda : this.set_on_subscription_listener()
@@ -51,10 +65,19 @@ public class Publisher: Subscriber {
     /**
      * On Subscribe
      */
-    private void __on_subscription (string data)  {
-        Logger.log("Received subscription information: " + /* JsonSerializer.Serialize */(data));
+    private void __on_subscription (Dictionary<string, string> data)  {
+        Logger.log("Received subscription information: " + JsonSerializer.Serialize(data));
 
-        this.subscribers[data["id"]] = data;
+        /**
+         * @todo
+         * maybe we only need to keep a copy of the subscription
+         * like name of the subcriber {
+            *  "name": "name",
+            *  "id": ID,   // socket id
+            *  ...
+         }
+         */
+        this.subscribers.Add(data["id"]);
 
         // further listener
         if (this.on_subscription_listener != null) 
@@ -96,7 +119,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_unsubscribed_listener (string eventName, Delegate callback)  {
-        string eventName = Events.to_onunsubscribe_event(eventName, this.id);
+        eventName = Events.to_onunsubscribe_event(eventName, this.id);
         // futureFunc = lambda data : (lambda data, cb=callback: this.__on_unsubscribed(cb, data))(data)
         this.on(eventName, callback);
     }

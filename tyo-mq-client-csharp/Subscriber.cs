@@ -4,10 +4,10 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 public class Subscriber: Socket {
 
-    delegate void SubscriptionEventHandler(string eventName, string who, string name, string message);
+    delegate void SubscriptionEventHandler(/* string eventName, string who, string name, string message */);
     delegate void OnNewSubscriptionHandler();
 
-    delegate void OnNewMessageHandler(string eventName, string message);
+    // delegate void OnNewMessageHandler(string eventName, string message);
 
     delegate void OnResubscribeListener();
 
@@ -38,7 +38,7 @@ public class Subscriber: Socket {
         }
     }
 
-    private void __trigger_consume_event(Dictionary<string, object> obj, string eventStr, Delegate callback)  {
+    private void __trigger_consume_event(Dictionary<string, string> obj, string eventStr, Delegate? callback)  {
         // if obj["eventName"] == eventStr 
         object data = obj["message"];
         if (callback != null) {
@@ -48,17 +48,18 @@ public class Subscriber: Socket {
 
     // For debug
     
-     private void __debug_on_message(string eventName, object message) {
-        Logger.debug("received message", eventName, message);
+     private void __debug_on_message(string eventName, Dictionary<string, string> message) {
+        string messageJsonStr = JsonSerializer.Serialize(message);
+        Logger.debug("received message", eventName, messageJsonStr);
         if (null != this.consumes)
             try {
-                func = this.consumes[eventName];
+                Delegate func = this.consumes[eventName];
                 this.__trigger_consume_event(message, eventName, func);
             }
             catch (Exception e) {
                 Logger.error("Ooops, something wrong", e);
             }
-        Logger.debug(eventName, ":", JsonSerializer.Serialize(message));
+        // Logger.debug(eventName, ":", JsonSerializer.Serialize(message));
         // callback(message)
     }
 
@@ -67,7 +68,7 @@ public class Subscriber: Socket {
      }
 
      private void __subscribe_internal(string who, string eventName, Delegate onConsumeCallback) {    
-            string eventStr = null;
+            string eventStr;
             if (eventName != null) 
                 eventStr = Events.to_event_string(eventName);
             else
@@ -81,7 +82,7 @@ public class Subscriber: Socket {
             string messageStr = "{'eventName':" + eventName + ", 'producer': " + who + ", 'consumer': " + name + "}";
     
             SubscriptionEventHandler sendSubscriptionMessage = () => { 
-                this.send_message("SUBSCRIBE", messageStr);
+                send_message("SUBSCRIBE", messageStr);
             };
 
             // On Connect Message will be trigger by system
@@ -96,7 +97,7 @@ public class Subscriber: Socket {
                     this.add_on_connect_listener(onNewSubscription);
                 }
 
-                this.subscriptions.add(sendSubscriptionMessage);
+                this.subscriptions.Add(sendSubscriptionMessage);
             }
             // the connection should be ready before we subscribe the message
             // this.on('connect', function ()  {
@@ -107,7 +108,7 @@ public class Subscriber: Socket {
                 this.consumes = new Dictionary<string, Delegate>();
     
             string consumeEventStr = Events.to_consume_event(eventStr);
-            this.consumes[consumeEventStr] = onConsumeCallbackl; // #lambda message, fromWhom : onConsumeCallback(message, fromWhom)
+            this.consumes[consumeEventStr] = onConsumeCallback; // #lambda message, fromWhom : onConsumeCallback(message, fromWhom)
             // #lambda obj : lambda obj, eventName=eventStr, callback=onConsumeCallback : this.__trigger_consume_event(obj, eventName, callback)
 
             // #futureFunc = lambda data : (lambda data, eventName=consumeEventStr: this.consumes[eventName](data))(data)
@@ -120,7 +121,14 @@ public class Subscriber: Socket {
                 this.__debug_on_message(consumeEventStr, data);
             };
             // futureFunc = lambda data, eventName=consumeEventStr : this.__debug_on_message(eventName, data)
-            this.on(consumeEventStr, futureFunc);
+            this.on(consumeEventStr, (response) => {
+                Console.WriteLine(response);
+    
+                // Get the first data in the response
+                string message = response.GetValue<string>();
+                Dictionary<string, string> messageDict = JsonSerializer.Deserialize<Dictionary<string, string>>(message);
+                __debug_on_message(consumeEventStr, data);
+            });
      }
 
      public void resubscribeWhenReconnect(string who, string eventName, Delegate onConsumeCallback, bool reSubscribe = true) {

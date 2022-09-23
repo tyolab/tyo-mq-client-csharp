@@ -1,9 +1,9 @@
 namespace tyo_mq_client_csharp;
 
-public class Events {
+public static class Events {
 
     // event is a keyword in C#
-    public string to_event_string(string event_name) {
+    public static string to_event_string(string event_name) {
         
         // eventStr = event
         // TODO
@@ -19,24 +19,21 @@ public class Events {
         return event_name;
     }
 
-    public string to_consume_event(Events cls, string event_name) {
-        string eventStr = cls.to_event_string(event_name);
+    public static string to_consume_event(string event_name) {
+        string eventStr = to_event_string(event_name);
         return "CONSUME-" + eventStr;
-
     }
 
-    public string to_ondisconnect_event(string id) {
+    public static string to_ondisconnect_event(string id) {
         return "DISCONNECT-" + id;
-
     }
 
-    public string to_onunsubscribe_event(Events cls, string event_name, string id) {
-        string eventStr = cls.to_event_string(event_name);
+    public static string to_onunsubscribe_event(string event_name, string id) {
+        string eventStr = to_event_string(event_name);
         return "UNSUBSCRIBE-" + eventStr + "-" + id;
-
     }
 
-    public string to_onsubscribe_event(string id) {
+    public static string to_onsubscribe_event(string id) {
         return "SUBSCRIBE-TO" + ("-" + id != null ? id : "");
     }
 }
