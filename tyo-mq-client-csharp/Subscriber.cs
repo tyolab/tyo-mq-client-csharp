@@ -7,7 +7,7 @@ public class Subscriber: Socket {
     delegate void SubscriptionEventHandler(/* string eventName, string who, string name, string message */);
     delegate void OnNewSubscriptionHandler();
 
-    // delegate void OnNewMessageHandler(string eventName, string message);
+    delegate void OnNewMessageHandler(Dictionary<string, string> data/* string eventName, string message */);
 
     delegate void OnResubscribeListener();
 
@@ -25,9 +25,9 @@ public class Subscriber: Socket {
     }
 
     private void __apply_subscritptions() {
-        if (this.__apply_subscritptions != null && this.subscriptions.Count > 0) {
-            // map(lambda func : func(), this.subscriptions);
-            // del this.subscriptions
+        if (this.__apply_subscritptions != null && 
+            this.subscriptions != null &&
+            this.subscriptions.Count > 0) {
             if (this.subscriptions != null) {
                 foreach (Delegate func in this.subscriptions) {
                     func.DynamicInvoke();
@@ -67,71 +67,67 @@ public class Subscriber: Socket {
         Logger.debug("received message", args);
      }
 
-     private void __subscribe_internal(string who, string eventName, Delegate onConsumeCallback) {    
-            string eventStr;
-            if (eventName != null) 
-                eventStr = Events.to_event_string(eventName);
-            else
-                eventStr = who + "-ALL";
+     private void __subscribe_internal(string who, string eventName, Delegate? onConsumeCallback = null) {    
+        string eventStr;
+        if (eventName != null) 
+            eventStr = Events.to_event_string(eventName);
+        else
+            eventStr = who + "-ALL";
 
-            /**
-             * @todo
-             * 
-             * deal with the ALL events later
-             */
-            string messageStr = "{'eventName':" + eventName + ", 'producer': " + who + ", 'consumer': " + name + "}";
-    
-            SubscriptionEventHandler sendSubscriptionMessage = () => { 
-                send_message("SUBSCRIBE", messageStr);
-            };
+        /**
+            * @todo
+            * 
+            * deal with the ALL events later
+            */
+        string messageStr = "{'eventName':" + eventName + ", 'producer': " + who + ", 'consumer': " + name + "}";
 
-            // On Connect Message will be trigger by system
-            if (this.connected) 
-                sendSubscriptionMessage();
-            else {
-                if (this.subscriptions == null) {
-                    this.subscriptions = new List<Delegate>();
-                    OnNewSubscriptionHandler onNewSubscription = () => {
-                        this.__apply_subscritptions();
-                    };
-                    this.add_on_connect_listener(onNewSubscription);
-                }
+        SubscriptionEventHandler sendNewSubscriptionMessage = () => { 
+            send_message("SUBSCRIBE", messageStr, onConsumeCallback);
+        };
 
-                this.subscriptions.Add(sendSubscriptionMessage);
+        // On Connect Message will be trigger by system
+        if (this.connected) 
+            sendNewSubscriptionMessage();
+        else {
+            if (this.subscriptions == null) {
+                this.subscriptions = new List<Delegate>();
+                OnNewSubscriptionHandler onNewSubscription = () => {
+                    this.__apply_subscritptions();
+                };
+                this.add_on_connect_listener(onNewSubscription);
             }
-            // the connection should be ready before we subscribe the message
-            // this.on('connect', function ()  {
-            //     sendSubscriptionMessage()
-            // })
-    
-            if (this.consumes == null)
-                this.consumes = new Dictionary<string, Delegate>();
-    
-            string consumeEventStr = Events.to_consume_event(eventStr);
-            this.consumes[consumeEventStr] = onConsumeCallback; // #lambda message, fromWhom : onConsumeCallback(message, fromWhom)
-            // #lambda obj : lambda obj, eventName=eventStr, callback=onConsumeCallback : this.__trigger_consume_event(obj, eventName, callback)
 
-            // #futureFunc = lambda data : (lambda data, eventName=consumeEventStr: this.consumes[eventName](data))(data)
-            // #futureFunc = lambda data, eventStr=consumeEventStr : this.consumes[eventStr](data)
-            // #DEBUG
-            Logger.debug("setting on eventName: " + consumeEventStr);
-            // #this.on(consumeEventStr, this.__debug_on_message)
-            // #futureFunc = lambda data : this.__debug_on_message(data)
-            OnNewMessageHandler futureFunc = (object data) => {
-                this.__debug_on_message(consumeEventStr, data);
-            };
-            // futureFunc = lambda data, eventName=consumeEventStr : this.__debug_on_message(eventName, data)
-            this.on(consumeEventStr, (response) => {
-                Console.WriteLine(response);
-    
-                // Get the first data in the response
-                string message = response.GetValue<string>();
-                Dictionary<string, string> messageDict = JsonSerializer.Deserialize<Dictionary<string, string>>(message);
-                __debug_on_message(consumeEventStr, data);
-            });
+            this.subscriptions.Add(sendNewSubscriptionMessage);
+        }
+        // the connection should be ready before we subscribe the message
+        // this.on('connect', function ()  {
+        //     sendSubscriptionMessage()
+        // })
+
+        if (this.consumes == null)
+            this.consumes = new Dictionary<string, Delegate>();
+
+        string consumeEventStr = Events.to_consume_event(eventStr);
+        if (onConsumeCallback != null) {
+            this.consumes[consumeEventStr] = onConsumeCallback;
+        }
+         // #lambda message, fromWhom : onConsumeCallback(message, fromWhom)
+        // #lambda obj : lambda obj, eventName=eventStr, callback=onConsumeCallback : this.__trigger_consume_event(obj, eventName, callback)
+
+        // #futureFunc = lambda data : (lambda data, eventName=consumeEventStr: this.consumes[eventName](data))(data)
+        // #futureFunc = lambda data, eventStr=consumeEventStr : this.consumes[eventStr](data)
+        // #DEBUG
+        Logger.debug("setting on eventName: " + consumeEventStr);
+        // #this.on(consumeEventStr, this.__debug_on_message)
+        // #futureFunc = lambda data : this.__debug_on_message(data)
+        OnNewMessageHandler futureFunc = (data) => {
+            __debug_on_message(consumeEventStr, data);
+        };
+        // futureFunc = lambda data, eventName=consumeEventStr : this.__debug_on_message(eventName, data)
+        this.on(consumeEventStr, futureFunc);
      }
 
-     public void resubscribeWhenReconnect(string who, string eventName, Delegate onConsumeCallback, bool reSubscribe = true) {
+     public void resubscribeWhenReconnect(string who, string eventName, Delegate? onConsumeCallback = null, bool reSubscribe = true) {
 
         this.__subscribe_internal(who, eventName, onConsumeCallback);
 

@@ -1,7 +1,6 @@
 namespace tyo_mq_client_csharp;
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 /**
  * Publisher
@@ -19,7 +18,7 @@ using System.Text.Json.Serialization;
  */
 public class Publisher: Subscriber {
 
-    private HashSet<string> subscribers;
+    private Dictionary<string, Subscription> subscribers;
 
     private string eventDefault;
 
@@ -30,7 +29,7 @@ public class Publisher: Subscriber {
         this.type = "PRODUCER";
         this.eventDefault = eventDefault != null? eventDefault : Constants.EVENT_DEFAULT;
         this.on_subscription_listener = null;
-        this.subscribers = new HashSet<string>();
+        this.subscribers = new Dictionary<string, Subscription>();
 
         // Initialisation
         // futureFunc = lambda : this.set_on_subscription_listener()
@@ -77,7 +76,7 @@ public class Publisher: Subscriber {
             *  ...
          }
          */
-        this.subscribers.Add(data["id"]);
+        this.subscribers.Add(data["id"], new Subscription(data["id"]));
 
         // further listener
         if (this.on_subscription_listener != null) 
