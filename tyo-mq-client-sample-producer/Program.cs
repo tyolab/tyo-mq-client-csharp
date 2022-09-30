@@ -1,6 +1,6 @@
 ﻿using TYO_MQ_CLIENT;
 using System.Timers;
-
+using SocketIOClient;
 namespace TYO_MQ_CLIENT.Examples;
 
 public class Program
@@ -12,7 +12,7 @@ public class Program
     {
         string message = $"{{\"time\": \"{DateTime.Now.ToString("H:mm:ss")}\"}}";
         publisher.produce(message);
-        Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
+        // Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
 
         NewTImer();
     }
@@ -37,14 +37,25 @@ public class Program
             Console.WriteLine("Connected");
         });
 
-        NewTImer();
+        // var sio = new SocketIO("ws://localhost:17352/", new SocketIOOptions()
+        //     {
+        //         EIO = 3,
+        //         Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+        //     });
+        // sio.OnConnected += async (sender, e) =>
+        // {
+        //     Console.WriteLine("Connected");
+        //     await sio.EmitAsync("subscribe", "sample-publisher");
+        // };
+        // await sio.ConnectAsync();
+        // NewTImer();
     }
 
     
     public static async Task Main(string[] args)
     {
         Program program = new Program();
-        program.run();
+        await program.run();
 
         var mre = new ManualResetEvent(false);
         ThreadPool.QueueUserWorkItem( (state) =>

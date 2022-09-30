@@ -80,9 +80,9 @@ public class Socket {
         if (protocol != null)
             this.protocol = protocol;
         else
-            this.protocol = "http";
+            this.protocol = "ws";
 
-        this.socket = null;
+        socket = null;
         this.connected = false;
         this.id = Guid.NewGuid().ToString();
         this.name = Constants.ANONYMOUS;
@@ -111,11 +111,11 @@ public class Socket {
         this.send_message(this.type, "{'name': " + this.name + ", 'id': " + this.id + "}");
     }
 
-    public void on_connect(Dictionary<string,string> msgDict) {
-        Logger.log("connected to message queue server", msgDict);
+    public void on_connect(Dictionary<string,string>? msgDict = null) {
+        Logger.log("connected to message queue server");
 
         this.connected = true;
-        this.socket.On("ERROR", response => {
+        socket.On("ERROR", response => {
             __on_error__(_handle_response(response));
         });
 
@@ -164,34 +164,41 @@ public class Socket {
         // #     socketIO.wait(seconds=1)
         string connectStr = this.host.StartsWith("http") ? this.host : this.protocol + "://" + this.host + ":" + this.port.ToString() + "/";
 
-        if (null == this.socket) {
-        this.socket = new SocketIO(connectStr);
-            this.socket.On("connect", response => {
-                Dictionary<string, string> msgDict = _handle_response(response);
-                this.on_connect(msgDict);
-                if (callback != null) {
-                    callback.DynamicInvoke(new object[] { msgDict } );
-                }
-            });
-            this.socket.On("disconnect", message => {
-                this.on_disconnect(message);
-            });
-            this.socket.On("reconnect", message => {
-                this.on_reconnect(message);
-            });
+        if (null == socket) {
+            socket = new SocketIO(connectStr, new SocketIOOptions()
+                {
+                    EIO = 3,
+                    Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+                });
+            // socket.On("connect", response => {
+            //     Dictionary<string, string> msgDict = _handle_response(response);
+            //     this.on_connect(msgDict);
+            //     if (callback != null) {
+            //         callback.DynamicInvoke(new object[] { msgDict } );
+            //     }
+            // });
+            // socket.On("disconnect", message => {
+            //     this.on_disconnect(message);
+            // });
+            // socket.On("reconnect", message => {
+            //     this.on_reconnect(message);
+            // });
         }
 
-        this.socket.OnConnected += async (sender, e) =>
+        socket.OnConnected += async (sender, e) =>
         {
+            on_connect(null);
             if (null != callback)
-                callback.DynamicInvoke(new object[] {e});
+                callback.DynamicInvoke();
         };
-        await this.socket.ConnectAsync();
+        if (socket.Connected)
+            return;
+        await socket.ConnectAsync();
 
         // if (duration == -1) 
-        //     this.socket.wait();
+        //     socket.wait();
         // else
-        //     this.socket.wait(duration);
+        //     socket.wait(duration);
     }
 
     // public string get_id() {
@@ -203,8 +210,8 @@ public class Socket {
     }
 
     public void disconnect() {
-        if (this.socket != null && this.connected)
-            this.socket.DisconnectAsync();
+        if (socket != null && this.connected)
+            socket.DisconnectAsync();
     }
 
     private Dictionary<string, string> _handle_response(SocketIOResponse response) {
@@ -218,7 +225,7 @@ public class Socket {
     }
 
     public void on(string eventName, Delegate callback) {
-        if (this.socket == null ) {
+        if (socket == null ) {
             // #raise Exception("Socket is not created yet")
             if (this.on_event_func_list == null) {
                 this.on_event_func_list = new List<Delegate>();
@@ -230,13 +237,13 @@ public class Socket {
             this.on_event_func_list.Add(callback);
         }
         else
-            this.socket.On(eventName, response => {
+            socket.On(eventName, response => {
                 callback.DynamicInvoke(new object[] { _handle_response(response)} );
             });
     }
 
     public void send_message(string eventName, string msg, Delegate? callback = null) {
-        if (this.socket == null)
+        if (socket == null)
             throw new Exception("Socket isn't ininitalized yet");
         
         ResponseHandler on_response = (response) => {
@@ -247,8 +254,8 @@ public class Socket {
             }
         };
 
-        if (!this.socket.Connected) {
-            OnConnectHandler futureFunc = () => this.socket.EmitAsync(eventName, on_response, msg);
+        if (!socket.Connected) {
+            OnConnectHandler futureFunc = () => socket.EmitAsync(eventName, on_response, msg);
 
             if (this.autoreconnect)
                 this.connect(futureFunc, -1);
@@ -256,6 +263,6 @@ public class Socket {
                 throw new Exception("Socket is created but not connected");
         }
         else
-            this.socket.EmitAsync(eventName, on_response, msg);
+            socket.EmitAsync(eventName, on_response, msg);
     }
 }
