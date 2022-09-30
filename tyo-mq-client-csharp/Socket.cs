@@ -1,4 +1,4 @@
-namespace tyo_mq_client_csharp;
+namespace TYO_MQ_CLIENT;
 
 using SocketIOClient;
 
@@ -62,7 +62,7 @@ public class Socket {
 
     public bool connected { get; set; }
 
-    public Socket(string host, int port, string protocol) {
+    public Socket(string? host = null, int port = -1, string? protocol = null) {
         this.type = "RAW";
 
         this.autoreconnect = true;
@@ -157,27 +157,36 @@ public class Socket {
     // #
     // #
     // #
-    public void connect(Delegate callback, int duration = -1) {
+    public async Task connect(Delegate? callback = null, int waittime = -1) {
         // # Example
         // # with SocketIO(this.host, this.port, SocketListener) as socketIO{
         // #     socketIO.emit("event")
         // #     socketIO.wait(seconds=1)
         string connectStr = this.host.StartsWith("http") ? this.host : this.protocol + "://" + this.host + ":" + this.port.ToString() + "/";
 
+        if (null == this.socket) {
         this.socket = new SocketIO(connectStr);
-        this.socket.On("connect", response => {
-            Dictionary<string, string> msgDict = _handle_response(response);
-            this.on_connect(msgDict);
-            if (callback != null) {
-                callback.DynamicInvoke(new object[] { msgDict } );
-            }
-        });
-        this.socket.On("disconnect", message => {
-            this.on_disconnect(message);
-        });
-        this.socket.On("reconnect", message => {
-            this.on_reconnect(message);
-        });
+            this.socket.On("connect", response => {
+                Dictionary<string, string> msgDict = _handle_response(response);
+                this.on_connect(msgDict);
+                if (callback != null) {
+                    callback.DynamicInvoke(new object[] { msgDict } );
+                }
+            });
+            this.socket.On("disconnect", message => {
+                this.on_disconnect(message);
+            });
+            this.socket.On("reconnect", message => {
+                this.on_reconnect(message);
+            });
+        }
+
+        this.socket.OnConnected += async (sender, e) =>
+        {
+            if (null != callback)
+                callback.DynamicInvoke(new object[] {e});
+        };
+        await this.socket.ConnectAsync();
 
         // if (duration == -1) 
         //     this.socket.wait();

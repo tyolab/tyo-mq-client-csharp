@@ -1,4 +1,4 @@
-namespace tyo_mq_client_csharp;
+namespace TYO_MQ_CLIENT;
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -15,7 +15,7 @@ public class Subscriber: Socket {
 
     private Dictionary<string, Delegate>? consumes;
 
-    public Subscriber(string name, string host, int port, string protocol) : base(host, port, protocol) {
+    public Subscriber(string name, string? host = null, int port = -1, string? protocol = null) : base(host, port, protocol) {
         this.type = "CONSUMER";
         this.name = name != null? name : Constants.ANONYMOUS;
         this.consumes = null; // new Dictionary<string, Delegate>();
@@ -166,4 +166,9 @@ public class Subscriber: Socket {
         this.subscribe(Constants.ALL_PUBLISHERS, eventName, onConsumeCallback, true);
     }
 
+    /**
+     */
+    public async Task register(Delegate? callback = null, int waittime = -1) {
+        await connect(callback, waittime);
+    }
 }

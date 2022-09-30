@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tyo-mq-client-csharp", "tyo-mq-client-csharp\tyo-mq-client-csharp.csproj", "{16ECA949-7B33-4BE5-B9CC-62126B2B50C7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tyo-mq-client-sample", "tyo-mq-client-sample\tyo-mq-client-sample.csproj", "{023A7F72-8C0E-46DA-B1BC-B2B093CCDD45}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tyo-mq-client-sample-producer", "tyo-mq-client-sample-producer\tyo-mq-client-sample-producer.csproj", "{023A7F72-8C0E-46DA-B1BC-B2B093CCDD45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tyo-mq-client-sample-subscriber", "tyo-mq-client-sample-subscriber\tyo-mq-client-sample-subscriber.csproj", "{C4D91A86-60C0-47C8-B0CD-D08E84526506}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -24,5 +26,9 @@ Global
 		{023A7F72-8C0E-46DA-B1BC-B2B093CCDD45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{023A7F72-8C0E-46DA-B1BC-B2B093CCDD45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{023A7F72-8C0E-46DA-B1BC-B2B093CCDD45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4D91A86-60C0-47C8-B0CD-D08E84526506}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4D91A86-60C0-47C8-B0CD-D08E84526506}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4D91A86-60C0-47C8-B0CD-D08E84526506}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4D91A86-60C0-47C8-B0CD-D08E84526506}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

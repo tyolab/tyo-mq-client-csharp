@@ -1,7 +1,6 @@
-namespace tyo_mq_client_csharp;
-
 using System.Text.Json;
 
+namespace TYO_MQ_CLIENT;
 /**
  * Publisher
  * =========
@@ -16,6 +15,7 @@ using System.Text.Json;
  *         * id
  *         * token  // secret, for authentication
  */
+ 
 public class Publisher: Subscriber {
 
     private Dictionary<string, Subscription> subscribers;
@@ -24,10 +24,10 @@ public class Publisher: Subscriber {
 
     private Delegate? on_subscription_listener;
 
-    public Publisher(string name, string eventDefault, string host, int port, string protocol) : base(name, host, port, protocol) {
+    public Publisher(string name, string? eventDefault = null, string? host = null, int port = -1, string? protocol = null) : base(name, host, port, protocol) {
 
         this.type = "PRODUCER";
-        this.eventDefault = eventDefault != null? eventDefault : Constants.EVENT_DEFAULT;
+        this.eventDefault = eventDefault != null? eventDefault : $"{name}-{Constants.EVENT_DEFAULT}";
         this.on_subscription_listener = null;
         this.subscribers = new Dictionary<string, Subscription>();
 
@@ -37,12 +37,8 @@ public class Publisher: Subscriber {
 
         Logger.debug("creating producer: " + this.name);
     }
-
-    public void broadcast (string data,  string eventName) {
-        this.produce(data,  eventName, Constants.METHOD_BROADCAST);
-    }
         
-    public void produce (string data, string eventName, string method) { 
+    public void produce (string data, string? eventName = null, string? method = null) { 
         if (data == null)
             return;
         
@@ -56,7 +52,7 @@ public class Publisher: Subscriber {
         }
 
         // for C#10 (dotnet 6.0) use:
-        string message = "{'event':" + eventName + ", 'message': " + data + ", 'from': " + this.name + ", method': " + method + "}";
+        string message = "{'event':" + eventName + ", 'message': " + data + ", 'from': " + this.name + ", method': " + (method ?? Constants.METHOD_BROADCAST) + "}";
         Logger.debug("sending message: " + message);
         this.send_message("PRODUCE", message);
     }

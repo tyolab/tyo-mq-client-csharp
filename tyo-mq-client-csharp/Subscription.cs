@@ -1,4 +1,4 @@
-namespace tyo_mq_client_csharp;
+namespace TYO_MQ_CLIENT;
 
 public enum SubscriptionType { FREE, PAID_MEMBER};
 
