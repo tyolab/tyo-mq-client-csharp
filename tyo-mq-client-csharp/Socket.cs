@@ -262,7 +262,13 @@ public class Socket {
             else
                 throw new Exception("Socket is created but not connected");
         }
-        else
-            socket.EmitAsync(eventName, on_response, msg);
+        else {
+            socket.EmitAsync("PING", (response) => {
+                Console.WriteLine(response);
+            }, "PING");
+            socket.EmitAsync(eventName, (response) => {
+                on_response.DynamicInvoke();
+            }, msg);
+        }
     }
 }

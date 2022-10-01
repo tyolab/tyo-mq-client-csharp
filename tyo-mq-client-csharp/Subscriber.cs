@@ -67,7 +67,7 @@ public class Subscriber: Socket {
         Logger.debug("received message", args);
      }
 
-     private void __subscribe_internal(string who, string eventName, Delegate? onConsumeCallback = null) {    
+     private void __subscribe_internal(string who, string? eventName = null, Delegate? onConsumeCallback = null) {    
         string eventStr;
         if (eventName != null) 
             eventStr = Events.to_event_string(eventName);
@@ -127,7 +127,7 @@ public class Subscriber: Socket {
         this.on(consumeEventStr, futureFunc);
      }
 
-     public void resubscribeWhenReconnect(string who, string eventName, Delegate? onConsumeCallback = null, bool reSubscribe = true) {
+     public void resubscribeWhenReconnect(string who, string? eventName = null, Delegate? onConsumeCallback = null, bool reSubscribe = true) {
 
         this.__subscribe_internal(who, eventName, onConsumeCallback);
 
@@ -147,7 +147,7 @@ public class Subscriber: Socket {
      * If an eventName name is not provided, then we subscribe all the messages from the producer
      */
 
-     public void subscribe (string who, string eventName, Delegate onConsumeCallback, bool reconcect = true) {
+     public void subscribe (string who, string? eventName = null, Delegate?onConsumeCallback = null, bool reconcect = true) {
         this.resubscribeWhenReconnect(who, eventName, onConsumeCallback, reconcect);
      }
 
@@ -155,15 +155,15 @@ public class Subscriber: Socket {
      * Subscribe only once, if the connection is gone, let it be
      */
 
-     public void subscribeOnce (string who, string eventName, Delegate onConsumeCallback) {
+     public void subscribeOnce (string who, string? eventName = null, Delegate? onConsumeCallback = null) {
         this.subscribe(who, eventName, onConsumeCallback, false);
      }
 
     /**
      * Subscribe all events with this name whatever providers are publishing
      */
-     public void subscribeAll (string eventName, Delegate onConsumeCallback) {
-        this.subscribe(Constants.ALL_PUBLISHERS, eventName, onConsumeCallback, true);
+     public void subscribeAll (string who, Delegate? onConsumeCallback = null) {
+        this.subscribe(who, null, onConsumeCallback, true);
     }
 
     /**
