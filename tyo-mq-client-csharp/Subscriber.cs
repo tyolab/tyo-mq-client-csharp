@@ -79,7 +79,7 @@ public class Subscriber: Socket {
             * 
             * deal with the ALL events later
             */
-        string messageStr = "{'eventName':" + eventName + ", 'producer': " + who + ", 'consumer': " + name + "}";
+        string messageStr = $"{{\"eventName\": \"{eventName}\", \"producer\": \"{who}\", \"consumer\": \"{name}\"}}";
 
         SubscriptionEventHandler sendNewSubscriptionMessage = () => { 
             send_message("SUBSCRIBE", messageStr, onConsumeCallback);

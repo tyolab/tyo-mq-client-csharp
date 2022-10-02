@@ -108,7 +108,7 @@ public class Socket {
     }
 
     public void send_identification_info() {
-        this.send_message(this.type, "{'name': " + this.name + ", 'id': " + this.id + "}");
+        this.send_message(this.type, "{'name': '" + this.name + "', 'id': '" + this.id + "'}");
     }
 
     public void on_connect(Dictionary<string,string>? msgDict = null) {
@@ -242,6 +242,9 @@ public class Socket {
             });
     }
 
+    /**
+     * Send message (in JSON) to the server 
+     */
     public void send_message(string eventName, string msg, Delegate? callback = null) {
         if (socket == null)
             throw new Exception("Socket isn't ininitalized yet");
@@ -263,9 +266,9 @@ public class Socket {
                 throw new Exception("Socket is created but not connected");
         }
         else {
-            socket.EmitAsync("PING", (response) => {
-                Console.WriteLine(response);
-            }, "PING");
+            // socket.EmitAsync("PING", (response) => {
+            //     Console.WriteLine(response);
+            // }, "PING");
             socket.EmitAsync(eventName, (response) => {
                 on_response.DynamicInvoke();
             }, msg);
