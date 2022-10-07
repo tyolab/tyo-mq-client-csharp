@@ -3,6 +3,9 @@ using System.Timers;
 using SocketIOClient;
 namespace TYO_MQ_CLIENT.Examples;
 
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 public class Program
 {
     private Publisher publisher;
@@ -11,7 +14,8 @@ public class Program
     private void OnTimedEvent(object source, ElapsedEventArgs e)
     {
         string message = $"{{\"time\": \"{DateTime.Now.ToString("H:mm:ss")}\"}}";
-        publisher.produce(message);
+        string escapedMessage = message.Replace("\"", "\\\"");
+        publisher.produce(escapedMessage/* Utils.JavaScriptStringEncode(message) */);
         // Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
 
         NewTImer();
@@ -48,7 +52,7 @@ public class Program
         //     await sio.EmitAsync("subscribe", "sample-publisher");
         // };
         // await sio.ConnectAsync();
-        // NewTImer();
+        NewTImer();
     }
 
     
