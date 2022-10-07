@@ -20,6 +20,8 @@ public class Program
         };
 
         subscriber.subscribe("sample-publisher", onNewMessage);
+
+        subscriber.subscribe("sample-publisher", "sample-publisher-tyo-mq-event-default", onNewMessage);
     }
 
     public static async Task Main(string[] args)

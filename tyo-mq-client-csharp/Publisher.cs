@@ -37,6 +37,10 @@ public class Publisher: Subscriber {
 
         Logger.debug("creating producer: " + this.name);
     }
+
+    /**
+     * 
+     */
         
     public void produce (string data, string? eventName = null, string? method = null) { 
         if (data == null)
