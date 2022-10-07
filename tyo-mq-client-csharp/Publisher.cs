@@ -42,7 +42,7 @@ public class Publisher: Subscriber {
         if (data == null)
             return;
         
-        if (eventName == null) {
+        if (string.IsNullOrEmpty(eventName)) {
             if (this.eventDefault == null) {
                 throw new Exception("please specifiy eventName");
             }
@@ -52,7 +52,7 @@ public class Publisher: Subscriber {
         }
 
         // for C#10 (dotnet 6.0) use:
-        string message = "{'event':'" + eventName + "', 'message': '" + data + "', 'from': '" + this.name + "', method': '" + (method ?? Constants.METHOD_BROADCAST) + "'}";
+        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", method\": \"{ (method ?? Constants.METHOD_BROADCAST) }\"}}";
         Logger.debug("sending message: " + message);
         this.send_message("PRODUCE", message);
     }

@@ -69,17 +69,17 @@ public class Subscriber: Socket {
 
      private void __subscribe_internal(string who, string? eventName = null, Delegate? onConsumeCallback = null) {    
         string eventStr;
-        if (eventName != null) 
-            eventStr = Events.to_event_string(eventName);
-        else
+        if (string.IsNullOrEmpty(eventName)) 
             eventStr = who + "-ALL";
+        else
+            eventStr = Events.to_event_string(eventName);
 
         /**
             * @todo
             * 
             * deal with the ALL events later
             */
-        string messageStr = $"{{\"eventName\": \"{eventName}\", \"producer\": \"{who}\", \"consumer\": \"{name}\"}}";
+        string messageStr = $"{{\"event\": \"{eventStr}\", \"producer\": \"{who}\", \"consumer\": \"{name}\"}}";
 
         SubscriptionEventHandler sendNewSubscriptionMessage = () => { 
             send_message("SUBSCRIBE", messageStr, onConsumeCallback);

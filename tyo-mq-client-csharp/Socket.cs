@@ -108,7 +108,7 @@ public class Socket {
     }
 
     public void send_identification_info() {
-        this.send_message(this.type, "{'name': '" + this.name + "', 'id': '" + this.id + "'}");
+        this.send_message(this.type, $"{{\"name\": \"{ this.name }\", \"id\": \"{ this.id }\"}}");
     }
 
     public void on_connect(Dictionary<string,string>? msgDict = null) {
@@ -124,7 +124,10 @@ public class Socket {
         int i = 0;
         while (i < this.on_connect_listeners.Count) {
             listener = this.on_connect_listeners[i]; 
-            listener.DynamicInvoke(new object[] {msgDict});
+            if (null == msgDict)
+                listener.DynamicInvoke();
+            else
+                listener.DynamicInvoke(new object[] {msgDict});
             i += 1;
         }
     }
