@@ -6,7 +6,7 @@ namespace TYO_MQ_CLIENT.Examples;
 public class Program
 {
     private Subscriber subscriber;
-    delegate void OnNewMessage(string msg);
+    delegate void OnNewMessage(Dictionary<string,string> msg);
 
     public async Task run() {
 

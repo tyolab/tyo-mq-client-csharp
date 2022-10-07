@@ -165,11 +165,7 @@ public class Socket {
         string connectStr = this.host.StartsWith("http") ? this.host : this.protocol + "://" + this.host + ":" + this.port.ToString() + "/";
 
         if (null == socket) {
-            socket = new SocketIO(connectStr, new SocketIOOptions()
-                {
-                    EIO = 3,
-                    Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-                });
+            socket = new SocketIO(connectStr, Factory.Options);
             // socket.On("connect", response => {
             //     Dictionary<string, string> msgDict = _handle_response(response);
             //     this.on_connect(msgDict);

@@ -1,5 +1,8 @@
 namespace TYO_MQ_CLIENT;
-public class MessageQueue {
+
+using SocketIOClient;
+
+public class Factory {
     private string host;
 
     private int port;
@@ -24,7 +27,20 @@ public class MessageQueue {
         set { protocol = value; }
     }
 
-    public MessageQueue(string host, int port, string protocol) {
+    private static SocketIOOptions options = new SocketIOOptions()
+        {
+            EIO = 4,
+            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+        }
+    ;
+
+    public static SocketIOOptions Options
+    {
+        get { return options; }
+        set { options = value; }
+    }
+
+    public Factory(string host, int port, string protocol) {
         // The SocketIO instance
         this.host = host;
         this.port = port;
