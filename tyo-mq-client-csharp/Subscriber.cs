@@ -147,8 +147,15 @@ public class Subscriber: Socket {
      * If an eventName name is not provided, then we subscribe all the messages from the producer
      */
 
-     public void subscribe (string who, string? eventName = null, Delegate?onConsumeCallback = null, bool reconcect = true) {
+    public void subscribe (string who, string? eventName = null, Delegate?onConsumeCallback = null, bool reconcect = true) {
         this.resubscribeWhenReconnect(who, eventName, onConsumeCallback, reconcect);
+    }
+
+    /**
+     */
+
+    public void subscribe (string who, Delegate?onConsumeCallback = null, bool reconcect = true) {
+        subscribe(who, null, onConsumeCallback, reconcect);
      }
 
     /**

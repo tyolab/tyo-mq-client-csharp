@@ -6,8 +6,7 @@ namespace TYO_MQ_CLIENT.Examples;
 public class Program
 {
     private Subscriber subscriber;
-    private System.Timers.Timer timer;
-
+    delegate void OnNewMessage(string msg);
 
     public async Task run() {
 
@@ -15,12 +14,14 @@ public class Program
         await subscriber.register(() => {
             Console.WriteLine("[Subscriber] Connected to the server.");
         });
-        subscriber.subscribe("sample-publisher", null /* using default event name*/, (msg) => {
+
+        OnNewMessage onNewMessage = (msg) => {
             Console.WriteLine($"[Subscriber] Received message: {msg}");
-        });
+        };
+
+        subscriber.subscribe("sample-publisher", onNewMessage);
     }
 
-    
     public static async Task Main(string[] args)
     {
         Program program = new Program();
