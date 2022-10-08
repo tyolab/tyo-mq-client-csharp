@@ -6,7 +6,7 @@ namespace TYO_MQ_CLIENT.Examples;
 public class Program
 {
     private Subscriber subscriber;
-    delegate void OnNewMessage(Dictionary<string,string> msg);
+    delegate void OnNewMessage(object msg);
 
     public async Task run() {
 
@@ -15,13 +15,17 @@ public class Program
             Console.WriteLine("[Subscriber] Connected to the server.");
         });
 
-        OnNewMessage onNewMessage = (msg) => {
-            Console.WriteLine($"[Subscriber] Received message: {msg}");
+        OnNewMessage onAllMessages = (msg) => {
+            Console.WriteLine($"[EVENT{{ALL}}] Received message: {msg}");
         };
 
-        subscriber.subscribe("sample-publisher", onNewMessage);
+        subscriber.subscribe("sample-publisher", onAllMessages);
 
-        subscriber.subscribe("sample-publisher", "sample-publisher-tyo-mq-event-default", onNewMessage);
+        OnNewMessage onNewMessage = (msg) => {
+            Console.WriteLine($"[EVENT{{S}}] Received message: {msg}");
+        };
+
+        subscriber.subscribe("sample-publisher", "s", onNewMessage);
     }
 
     public static async Task Main(string[] args)

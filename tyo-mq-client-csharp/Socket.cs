@@ -213,14 +213,27 @@ public class Socket {
             socket.DisconnectAsync();
     }
 
-    private Dictionary<string, string> _handle_response(SocketIOResponse response) {
+    private Dictionary<string, string>? _handle_response(SocketIOResponse response) {
         Console.WriteLine(response);
     
         // Get the first data in the response
-        string message = response.GetValue<string>();
-        if (null == message)
-            return new Dictionary<string, string>();
-        return /* Dictionary<string, string> messageDict =  */JsonSerializer.Deserialize<Dictionary<string, string>>(message);
+        object? message = null;
+        try {
+            message = response.GetValue<string>();
+            return JsonSerializer.Deserialize<Dictionary<string, string>>((string)message);
+        }
+        catch (Exception ex) {
+            // OK, it is not a string, could be an JSON object then
+            try {
+                message = response.GetValue<object>();
+                if (null != message)
+                    return JsonSerializer.Deserialize<Dictionary<string, string>>(message.ToString());
+            }
+            catch (Exception ex_obj) {
+                Logger.error("Failed to get the message", ex_obj);
+            }
+        }
+        return null; // new Dictionary<string, string>();
     }
 
     public void on(string eventName, Delegate callback) {
@@ -237,7 +250,8 @@ public class Socket {
         }
         else
             socket.On(eventName, response => {
-                callback.DynamicInvoke(new object[] { _handle_response(response)} );
+                var msgDict = _handle_response(response);
+                callback.DynamicInvoke(new object[] { msgDict} );
             });
     }
 

@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 public class Subscriber: Socket {
 
     delegate void SubscriptionEventHandler(/* string eventName, string who, string name, string message */);
-    delegate void OnNewSubscriptionHandler();
+    delegate void OnTrySubscriptionHandler();
 
     delegate void OnNewMessageHandler(Dictionary<string, string> data/* string eventName, string message */);
 
@@ -40,9 +40,12 @@ public class Subscriber: Socket {
 
     private void __trigger_consume_event(Dictionary<string, string> obj, string eventStr, Delegate? callback)  {
         // if obj["eventName"] == eventStr 
-        object data = obj["message"];
+        object? data = null != obj ? obj["message"] : null;
         if (callback != null) {
-            callback.DynamicInvoke(new object[] { data });
+            if (null == data)
+                callback.DynamicInvoke();
+            else
+                callback.DynamicInvoke(new object[] { data });
         }
     }
 
@@ -53,8 +56,9 @@ public class Subscriber: Socket {
         Logger.debug("received message", eventName, messageJsonStr);
         if (null != this.consumes)
             try {
-                Delegate func = this.consumes[eventName];
-                this.__trigger_consume_event(message, eventName, func);
+                Delegate func = this.consumes[eventName]; 
+                if (null != func)
+                    this.__trigger_consume_event(message, eventName, func);
             }
             catch (Exception e) {
                 Logger.error("Ooops, something wrong", e);
@@ -91,10 +95,10 @@ public class Subscriber: Socket {
         else {
             if (this.subscriptions == null) {
                 this.subscriptions = new List<Delegate>();
-                OnNewSubscriptionHandler onNewSubscription = () => {
+                OnTrySubscriptionHandler trySubscription = () => {
                     this.__apply_subscritptions();
                 };
-                this.add_on_connect_listener(onNewSubscription);
+                this.add_on_connect_listener(trySubscription);
             }
 
             this.subscriptions.Add(sendNewSubscriptionMessage);

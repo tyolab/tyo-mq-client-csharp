@@ -36,7 +36,7 @@ public class Program
 
     public async Task run() {
 
-        publisher = new Publisher("sample-publisher");
+        publisher = new Publisher("sample-publisher", "s" /*the event name*/);
         await publisher.register(() => {
             Console.WriteLine("Connected");
         });
@@ -54,8 +54,6 @@ public class Program
         // await sio.ConnectAsync();
         NewTImer();
     }
-
-    
     public static async Task Main(string[] args)
     {
         Program program = new Program();
