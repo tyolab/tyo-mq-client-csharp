@@ -11,11 +11,24 @@ public class Program
     private Publisher publisher;
     private System.Timers.Timer timer;
 
+    private string producerName = "sample-publisher";
+    private string? topic = null; // "sample-topic";
+
+    public string ProducerName {
+        get { return producerName; }
+        set { producerName = value; }
+    }
+
+    public string Topic {
+        get { return topic; }
+        set { topic = value; }
+    }
+
     private void OnTimedEvent(object source, ElapsedEventArgs e)
     {
         string message = $"{{\"time\": \"{DateTime.Now.ToString("H:mm:ss")}\"}}";
         string escapedMessage = message.Replace("\"", "\\\"");
-        publisher.produce(escapedMessage/* Utils.JavaScriptStringEncode(message) */);
+        publisher.produce(escapedMessage, Topic/* Utils.JavaScriptStringEncode(message) */);
         // Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
 
         NewTImer();
@@ -36,7 +49,7 @@ public class Program
 
     public async Task run() {
 
-        publisher = new Publisher("sample-publisher", "s" /*the event name*/);
+        publisher = new Publisher(producerName, "s" /*the event name*/);
         await publisher.register(() => {
             Console.WriteLine("Connected");
         });
@@ -57,6 +70,17 @@ public class Program
     public static async Task Main(string[] args)
     {
         Program program = new Program();
+
+        if (args.Length > 0) {
+            program.ProducerName = args[0];
+            Console.WriteLine("Producer name: " + program.ProducerName);
+        }
+
+        if (args.Length > 1) {
+            program.Topic = args[1];
+            Console.WriteLine("Topic: " + program.Topic);
+        }
+        
         await program.run();
 
         var mre = new ManualResetEvent(false);
