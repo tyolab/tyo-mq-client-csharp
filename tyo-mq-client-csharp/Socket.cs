@@ -108,7 +108,7 @@ public class Socket {
     }
 
     public void send_identification_info() {
-        this.send_message(this.type, $"{{\"name\": \"{this.name}\", \"id\": \"{this.id}\"}}");
+        this.send_message(this.type, $"{{\"name\": \"{ this.name }\", \"id\": \"{ this.id }\"}}");
     }
 
     public void on_connect(Dictionary<string,string>? msgDict = null) {
@@ -124,7 +124,10 @@ public class Socket {
         int i = 0;
         while (i < this.on_connect_listeners.Count) {
             listener = this.on_connect_listeners[i]; 
-            listener.DynamicInvoke(new object[] {msgDict});
+            if (null == msgDict)
+                listener.DynamicInvoke();
+            else
+                listener.DynamicInvoke(new object[] {msgDict});
             i += 1;
         }
     }
@@ -165,11 +168,7 @@ public class Socket {
         string connectStr = this.host.StartsWith("http") ? this.host : this.protocol + "://" + this.host + ":" + this.port.ToString() + "/";
 
         if (null == socket) {
-            socket = new SocketIO(connectStr, new SocketIOOptions()
-                {
-                    EIO = 4,
-                    Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
-                });
+            socket = new SocketIO(connectStr, Factory.Options);
             // socket.On("connect", response => {
             //     Dictionary<string, string> msgDict = _handle_response(response);
             //     this.on_connect(msgDict);
@@ -214,14 +213,27 @@ public class Socket {
             socket.DisconnectAsync();
     }
 
-    private Dictionary<string, string> _handle_response(SocketIOResponse response) {
+    private Dictionary<string, string>? _handle_response(SocketIOResponse response) {
         Console.WriteLine(response);
     
         // Get the first data in the response
-        string message = response.GetValue<string>();
-        if (null == message)
-            return new Dictionary<string, string>();
-        return /* Dictionary<string, string> messageDict =  */JsonSerializer.Deserialize<Dictionary<string, string>>(message);
+        object? message = null;
+        try {
+            message = response.GetValue<string>();
+            return JsonSerializer.Deserialize<Dictionary<string, string>>((string)message);
+        }
+        catch (Exception ex) {
+            // OK, it is not a string, could be an JSON object then
+            try {
+                message = response.GetValue<object>();
+                if (null != message)
+                    return JsonSerializer.Deserialize<Dictionary<string, string>>(message.ToString());
+            }
+            catch (Exception ex_obj) {
+                Logger.error("Failed to get the message", ex_obj);
+            }
+        }
+        return null; // new Dictionary<string, string>();
     }
 
     public void on(string eventName, Delegate callback) {
@@ -238,7 +250,8 @@ public class Socket {
         }
         else
             socket.On(eventName, response => {
-                callback.DynamicInvoke(new object[] { _handle_response(response)} );
+                var msgDict = _handle_response(response);
+                callback.DynamicInvoke(new object[] { msgDict} );
             });
     }
 
