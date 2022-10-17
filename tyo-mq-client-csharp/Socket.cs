@@ -108,7 +108,7 @@ public class Socket {
     }
 
     public void send_identification_info() {
-        this.send_message(this.type, "{'name': '" + this.name + "', 'id': '" + this.id + "'}");
+        this.send_message(this.type, $"{{\"name\": \"{this.name}\", \"id\": \"{this.id}\"}}");
     }
 
     public void on_connect(Dictionary<string,string>? msgDict = null) {
@@ -167,7 +167,7 @@ public class Socket {
         if (null == socket) {
             socket = new SocketIO(connectStr, new SocketIOOptions()
                 {
-                    EIO = 3,
+                    EIO = 4,
                     Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
                 });
             // socket.On("connect", response => {

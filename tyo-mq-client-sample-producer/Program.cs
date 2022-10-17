@@ -37,9 +37,9 @@ public class Program
             Console.WriteLine("Connected");
         });
 
-        // var sio = new SocketIO("ws://localhost:17352/", new SocketIOOptions()
+        // var sio = new SocketIO("http://localhost:17352/", new SocketIOOptions()
         //     {
-        //         EIO = 3,
+        //         EIO = 4,
         //         Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
         //     });
         // sio.OnConnected += async (sender, e) =>
