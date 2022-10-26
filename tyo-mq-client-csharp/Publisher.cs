@@ -20,14 +20,16 @@ public class Publisher: Subscriber {
 
     private Dictionary<string, Subscription> subscribers;
 
-    private string eventDefault;
+    private string? eventDefault = null;
 
     private Delegate? on_subscription_listener;
 
     public Publisher(string name, string? eventDefault = null, string? host = null, int port = -1, string? protocol = null) : base(name, host, port, protocol) {
 
         this.type = "PRODUCER";
-        this.eventDefault = eventDefault != null? eventDefault : $"{name}-{Constants.EVENT_DEFAULT}";
+        this.eventDefault = string.IsNullOrEmpty(eventDefault) ? eventDefault : 
+                                        (string.IsNullOrEmpty(this.eventDefault) ? 
+                                            this.eventDefault: $"{name}-{Constants.EVENT_DEFAULT}");
         this.on_subscription_listener = null;
         this.subscribers = new Dictionary<string, Subscription>();
 
