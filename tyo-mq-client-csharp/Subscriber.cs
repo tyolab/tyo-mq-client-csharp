@@ -73,8 +73,11 @@ public class Subscriber: Socket {
 
      private void __subscribe_internal(string who, string? eventName = null, Delegate? onConsumeCallback = null) {    
         string eventStr;
-        if (string.IsNullOrEmpty(eventName)) 
-            eventStr = who + "-ALL";
+        bool is_all = false;
+        if (string.IsNullOrEmpty(eventName)) {
+            eventStr = Constants.EVENT_ALL; // Events.to_consumer_all_event(who); // who + "-ALL";
+            is_all = true;
+        }
         else
             eventStr = Events.to_event_string(eventName);
 
@@ -83,7 +86,8 @@ public class Subscriber: Socket {
             * 
             * deal with the ALL events later
             */
-        string messageStr = $"{{\"event\": \"{eventStr}\", \"producer\": \"{who}\", \"consumer\": \"{name}\"}}";
+        string scope_str = is_all ? Constants.SCOPE_ALL : Constants.SCOPE_DEFAULT;
+        string messageStr = $"{{\"event\": \"{eventStr}\", \"producer\": \"{who}\", \"consumer\": \"{name}\", \"scope\": \"{scope_str}\"}}";
 
         SubscriptionEventHandler sendNewSubscriptionMessage = () => { 
             send_message("SUBSCRIBE", messageStr, onConsumeCallback);
@@ -111,9 +115,9 @@ public class Subscriber: Socket {
         if (this.consumes == null)
             this.consumes = new Dictionary<string, Delegate>();
 
-        string consumeEventStr = Events.to_consume_event(eventStr);
+        string consumerEventStr = Events.to_consumer_event(eventStr, who, is_all);
         if (onConsumeCallback != null) {
-            this.consumes[consumeEventStr] = onConsumeCallback;
+            this.consumes[consumerEventStr] = onConsumeCallback;
         }
          // #lambda message, fromWhom : onConsumeCallback(message, fromWhom)
         // #lambda obj : lambda obj, eventName=eventStr, callback=onConsumeCallback : this.__trigger_consume_event(obj, eventName, callback)
@@ -121,13 +125,14 @@ public class Subscriber: Socket {
         // #futureFunc = lambda data : (lambda data, eventName=consumeEventStr: this.consumes[eventName](data))(data)
         // #futureFunc = lambda data, eventStr=consumeEventStr : this.consumes[eventStr](data)
         // #DEBUG
-        Logger.debug("setting on eventName: " + consumeEventStr);
+        Logger.debug("setting on eventName: " + consumerEventStr);
         // #this.on(consumeEventStr, this.__debug_on_message)
         // #futureFunc = lambda data : this.__debug_on_message(data)
         OnNewMessageHandler futureFunc = (data) => {
-            __debug_on_message(consumeEventStr, data);
+            __debug_on_message(consumerEventStr, data);
         };
         // futureFunc = lambda data, eventName=consumeEventStr : this.__debug_on_message(eventName, data)
+        string consumeEventStr = Events.to_consume_event(consumerEventStr);
         this.on(consumeEventStr, futureFunc);
      }
 

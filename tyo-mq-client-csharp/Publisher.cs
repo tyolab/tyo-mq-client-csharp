@@ -27,9 +27,10 @@ public class Publisher: Subscriber {
     public Publisher(string name, string? eventDefault = null, string? host = null, int port = -1, string? protocol = null) : base(name, host, port, protocol) {
 
         this.type = "PRODUCER";
-        this.eventDefault = string.IsNullOrEmpty(eventDefault) ? eventDefault : 
-                                        (string.IsNullOrEmpty(this.eventDefault) ? 
-                                            this.eventDefault: $"{name}-{Constants.EVENT_DEFAULT}");
+        this.eventDefault = !string.IsNullOrEmpty(eventDefault) ? 
+                                        eventDefault 
+                                       : 
+                                       $"{name}-{Constants.EVENT_DEFAULT}";
         this.on_subscription_listener = null;
         this.subscribers = new Dictionary<string, Subscription>();
 
@@ -50,7 +51,7 @@ public class Publisher: Subscriber {
         
         if (string.IsNullOrEmpty(eventName)) {
             if (this.eventDefault == null) {
-                throw new Exception("please specifiy eventName");
+                throw new Exception("please specify a topic of the message or specify one when creating a publisher");
             }
             else {
                  eventName = this.eventDefault;
@@ -58,7 +59,7 @@ public class Publisher: Subscriber {
         }
 
         // for C#10 (dotnet 6.0) use:
-        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_BROADCAST) }\"}}";
+        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_UNICAST) }\"}}";
         Logger.debug("sending message: " + message);
         this.send_message("PRODUCE", message);
     }
