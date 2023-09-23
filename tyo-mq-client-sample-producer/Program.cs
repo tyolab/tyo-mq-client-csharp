@@ -49,7 +49,7 @@ public class Program
 
     public async Task run() {
 
-        publisher = new Publisher(producerName, "s" /*the event name*/);
+        publisher = new Publisher(producerName, "s" /*the default event name*/);
         await publisher.register(() => {
             Console.WriteLine("Connected");
         });
