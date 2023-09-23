@@ -27,9 +27,8 @@ public class Publisher: Subscriber {
     public Publisher(string name, string? eventDefault = null, string? host = null, int port = -1, string? protocol = null) : base(name, host, port, protocol) {
 
         this.type = "PRODUCER";
-        this.eventDefault = string.IsNullOrEmpty(eventDefault) ? eventDefault : 
-                                        (string.IsNullOrEmpty(this.eventDefault) ? 
-                                            this.eventDefault: $"{name}-{Constants.EVENT_DEFAULT}");
+        this.eventDefault = get_default_event(eventDefault);
+                                        
         this.on_subscription_listener = null;
         this.subscribers = new Dictionary<string, Subscription>();
 
@@ -38,6 +37,11 @@ public class Publisher: Subscriber {
         // this.add_on_connect_listener(futureFunc)
 
         Logger.debug("creating producer: " + this.name);
+    }
+
+    private string get_default_event(string? eventDefault = null) {
+        return (!string.IsNullOrEmpty(eventDefault) ? 
+                    eventDefault: $"{name}-{Constants.EVENT_DEFAULT}");
     }
 
     /**
@@ -50,7 +54,7 @@ public class Publisher: Subscriber {
         
         if (string.IsNullOrEmpty(eventName)) {
             if (this.eventDefault == null) {
-                throw new Exception("please specifiy eventName");
+                throw new Exception("please specifiy an event name");
             }
             else {
                  eventName = this.eventDefault;
@@ -58,9 +62,13 @@ public class Publisher: Subscriber {
         }
 
         // for C#10 (dotnet 6.0) use:
-        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_BROADCAST) }\"}}";
+        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_UNICAST) }\"}}";
         Logger.debug("sending message: " + message);
         this.send_message("PRODUCE", message);
+    }
+
+    public void broadcast(string data, string? eventName = null) {
+        this.produce(data, eventName, Constants.METHOD_BROADCAST);
     }
 
     /**

@@ -16,6 +16,7 @@ public class Subscriber: Socket {
     private Dictionary<string, Delegate>? consumes;
 
     public Subscriber(string name, string? host = null, int port = -1, string? protocol = null) : base(host, port, protocol) {
+
         this.type = "CONSUMER";
         this.name = name != null? name : Constants.ANONYMOUS;
         this.consumes = null; // new Dictionary<string, Delegate>();
