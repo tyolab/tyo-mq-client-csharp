@@ -16,7 +16,7 @@ public static class Events {
         // else 
         //     throw new Error ("Unknown event object: should be a string or object with event string")
         // return eventStr
-        return (null != prefix ? (prefix + '-') : "") + event_name + (null != suffix ? ('-' + suffix) : "");;
+        return (null != prefix ? (prefix + '-') : "") + event_name + (null != suffix ? ('-' + suffix) : "");
     }
 
     public static string to_consume_event(string event_name) {
