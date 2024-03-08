@@ -25,8 +25,8 @@ public class Subscriber: Socket {
         Logger.debug("creating subscriber: " + this.name);
     }
 
-    private void __apply_subscritptions() {
-        if (this.__apply_subscritptions != null && 
+    private void __apply_subscriptions() {
+        if (this.__apply_subscriptions != null && 
             this.subscriptions != null &&
             this.subscriptions.Count > 0) {
             if (this.subscriptions != null) {
@@ -101,7 +101,7 @@ public class Subscriber: Socket {
             if (this.subscriptions == null) {
                 this.subscriptions = new List<Delegate>();
                 OnTrySubscriptionHandler trySubscription = () => {
-                    this.__apply_subscritptions();
+                    this.__apply_subscriptions();
                 };
                 this.add_on_connect_listener(trySubscription);
             }
