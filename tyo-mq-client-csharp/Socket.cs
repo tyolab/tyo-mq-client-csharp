@@ -255,6 +255,15 @@ public class Socket {
             });
     }
 
+    public void off(string? eventName = null) {
+        if (socket == null) {
+
+        }
+        else {
+            socket.Off(eventName);
+        }
+    }
+
     /**
      * Send message (in JSON) to the server 
      */

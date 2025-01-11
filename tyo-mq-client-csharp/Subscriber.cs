@@ -134,6 +134,7 @@ public class Subscriber: Socket {
         };
         // futureFunc = lambda data, eventName=consumeEventStr : this.__debug_on_message(eventName, data)
         string consumeEventStr = Events.to_consume_event(consumerEventStr);
+        this.off(consumeEventStr);
         this.on(consumeEventStr, futureFunc);
      }
 
