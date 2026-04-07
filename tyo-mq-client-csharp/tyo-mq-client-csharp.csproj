@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>TYO_MQ_CLIENT</PackageId>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <Authors>tyolab</Authors>
     <Company>TYO Lab</Company>
 
