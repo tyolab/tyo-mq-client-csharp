@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build-producer",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/tyo-mq-client-sample-producer/bin/Debug/net6.0/tyo-mq-client-sample-producer.dll",
+            "program": "${workspaceFolder}/tyo-mq-client-sample-producer/bin/Debug/net8.0/tyo-mq-client-sample-producer.dll",
             "args": [],
             "cwd": "${workspaceFolder}/tyo-mq-client-sample-producer",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -27,7 +27,7 @@
             "request": "launch",
             "preLaunchTask": "build-subscriber",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/tyo-mq-client-sample-subscriber/bin/Debug/net6.0/tyo-mq-client-sample-subscriber.dll",
+            "program": "${workspaceFolder}/tyo-mq-client-sample-subscriber/bin/Debug/net8.0/tyo-mq-client-sample-subscriber.dll",
             "args": [],
             "cwd": "${workspaceFolder}/tyo-mq-client-sample-subscriber",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console

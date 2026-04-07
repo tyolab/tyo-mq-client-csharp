@@ -50,10 +50,10 @@ public class Publisher: Subscriber {
      * 
      */
         
-    public void produce (string data, string? eventName = null, string? method = null) { 
+    public void produce (string data, string? eventName = null, string? method = null) {
         if (data == null)
             return;
-        
+
         if (string.IsNullOrEmpty(eventName)) {
             if (this.eventDefault == null) {
                 throw new Exception("please specify a topic of the message or specify one when creating a publisher");
@@ -65,8 +65,38 @@ public class Publisher: Subscriber {
 
         // for C#10 (dotnet 6.0) use:
         string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_UNICAST) }\"}}";
-        Logger.debug("sending message: " + message);
-        this.send_message("PRODUCE", message);
+
+        if (message.Length <= Constants.CHUNK_SIZE) {
+            Logger.debug("sending message: " + message);
+            this.send_message("PRODUCE", message);
+            return;
+        }
+
+        // Large message — build properly-escaped JSON then split into chunks
+        var fullJson = JsonSerializer.Serialize(new Dictionary<string, string> {
+            { "event",   eventName },
+            { "message", data },
+            { "from",    this.name },
+            { "method",  method ?? Constants.METHOD_UNICAST }
+        });
+
+        int chunkSize  = Constants.CHUNK_SIZE;
+        int total      = (fullJson.Length + chunkSize - 1) / chunkSize;
+        string transferId = Guid.NewGuid().ToString("N");
+
+        Logger.debug($"sending large message in {total} chunks (transferId: {transferId})");
+
+        for (int i = 0; i < total; i++) {
+            int start  = i * chunkSize;
+            int length = Math.Min(chunkSize, fullJson.Length - start);
+            string chunkJson = JsonSerializer.Serialize(new Dictionary<string, object> {
+                { "transferId", transferId },
+                { "index",      i },
+                { "total",      total },
+                { "data",       fullJson.Substring(start, length) }
+            });
+            this.send_message("PRODUCE_CHUNK", chunkJson);
+        }
     }
 
     public void broadcast(string data, string? eventName = null) {
@@ -96,7 +126,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_subscription_listener () {
-        String eventName = Events.to_onsubscribe_event(this.id);
+        String eventName = Events.to_onsubscribe_event(this.uuid);
         this.on(eventName, this.__on_subscription);
     }
 
@@ -111,7 +141,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_subscriber_lost_listener (Delegate callback)  {
-        string eventName = Events.to_ondisconnect_event(this.id);
+        string eventName = Events.to_ondisconnect_event(this.uuid);
         // futureFunc = lambda data : (lambda data, cb=callback : this.__on_lost_subscriber(cb, data))(data)
         this.on(eventName, callback);
     }
@@ -130,7 +160,7 @@ public class Publisher: Subscriber {
     }
 
     public void set_on_unsubscribed_listener (string eventName, Delegate callback)  {
-        eventName = Events.to_onunsubscribe_event(eventName, this.id);
+        eventName = Events.to_onunsubscribe_event(eventName, this.uuid);
         // futureFunc = lambda data : (lambda data, cb=callback: this.__on_unsubscribed(cb, data))(data)
         this.on(eventName, callback);
     }

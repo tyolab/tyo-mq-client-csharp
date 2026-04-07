@@ -12,7 +12,7 @@ public class Program
     private System.Timers.Timer timer;
 
     private string producerName = "sample-publisher";
-    private string? topic = null; // "sample-topic";
+    private string? topic = "s"; // "sample-topic";
 
     public string ProducerName {
         get { return producerName; }
@@ -28,6 +28,7 @@ public class Program
     {
         string message = $"{{\"time\": \"{DateTime.Now.ToString("H:mm:ss")}\"}}";
         string escapedMessage = message.Replace("\"", "\\\"");
+        Console.WriteLine("Sending message: " + escapedMessage + " to topic: " + Topic);
         publisher.produce(escapedMessage, Topic/* Utils.JavaScriptStringEncode(message) */);
         // Console.WriteLine("The Elapsed event was raised at {0}", e.SignalTime);
 

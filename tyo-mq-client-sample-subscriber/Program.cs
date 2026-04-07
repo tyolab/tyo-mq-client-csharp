@@ -11,8 +11,18 @@ public class Program
     public async Task run() {
 
         subscriber = new Subscriber("sample-subscriber");
+
+        // Enable debug mode to see all messages
+        // subscriber.debug = true;
+
         await subscriber.register(() => {
-            Console.WriteLine("[Subscriber] Connected to the server.");
+            Console.WriteLine($"[Subscriber] Connected to the server. Socket ID: {subscriber.socket_id}");
+
+            // Register catch-all handler AFTER connection is established
+            // subscriber.on_any((eventName, response) => {
+            //     Console.WriteLine($"[on_any] Received event: {eventName}");
+            //     Console.WriteLine($"[on_any] Response: {response}");
+            // });
         });
 
         OnNewMessage onAllMessages = (msg) => {

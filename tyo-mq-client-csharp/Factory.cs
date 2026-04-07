@@ -28,9 +28,17 @@ public class Factory {
     }
 
     private static SocketIOOptions options = new SocketIOOptions()
-        {
+    {
             EIO = 4,
-            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+            Transport = SocketIOClient.Transport.TransportProtocol.WebSocket
+            
+            // for SOcketIO >=3.1.x
+            // EIO = SocketIO.CoreEngineIO.V3,
+            // Transport = SocketIOClient.Transport.TransportProtocol.WebSocket,
+            // Reconnection = true,
+            // ReconnectionAttempts = int.MaxValue,
+            // ReconnectionDelay = 1000,
+            // ReconnectionDelayMax = 5000
         }
     ;
 

@@ -23,4 +23,7 @@ public static class Constants
 
     // SERVER DEFAULTS
     public static readonly int DEFAULT_PORT = 17352;
+
+    // Must match Publisher.CHUNK_SIZE in the JS server/client (256 KB)
+    public static readonly int CHUNK_SIZE = 256 * 1024;
 }
