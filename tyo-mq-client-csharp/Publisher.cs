@@ -63,22 +63,20 @@ public class Publisher: Subscriber {
             }
         }
 
-        // for C#10 (dotnet 6.0) use:
-        string message = $"{{\"event\": \"{ eventName }\", \"message\": \"{ data }\", \"from\": \"{ this.name }\", \"method\": \"{ (method ?? Constants.METHOD_UNICAST) }\"}}";
-
-        if (message.Length <= Constants.CHUNK_SIZE) {
-            Logger.debug("sending message: " + message);
-            this.send_message("PRODUCE", message);
-            return;
-        }
-
-        // Large message — build properly-escaped JSON then split into chunks
+        // Always use JsonSerializer so both paths escape identically.
+        // Callers must pass raw (un-pre-encoded) strings.
         var fullJson = JsonSerializer.Serialize(new Dictionary<string, string> {
             { "event",   eventName },
             { "message", data },
             { "from",    this.name },
             { "method",  method ?? Constants.METHOD_UNICAST }
         });
+
+        if (fullJson.Length <= Constants.CHUNK_SIZE) {
+            Logger.debug("sending message: " + fullJson);
+            this.send_message("PRODUCE", fullJson);
+            return;
+        }
 
         int chunkSize  = Constants.CHUNK_SIZE;
         int total      = (fullJson.Length + chunkSize - 1) / chunkSize;
