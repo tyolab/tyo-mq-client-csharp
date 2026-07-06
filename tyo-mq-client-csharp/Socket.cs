@@ -365,34 +365,39 @@ public class Socket {
             Logger.log("[DEBUG] Raw response received:", response);
         }
 
-        // Get the first data in the response
-        object? message = null;
-        Dictionary<string, string>? result = null;
+        // Get the first data in the response. Values are flattened to strings:
+        // JSON strings stay as-is; numbers, booleans, objects, and arrays keep
+        // their raw JSON text (e.g. an ERROR payload's numeric `code`, or a
+        // consumed message whose `message` field is a JSON object).
         try {
-            message = response.GetValue<string>();
-            result = JsonSerializer.Deserialize<Dictionary<string, string>>((string)message);
+            string json;
+            try {
+                json = response.GetValue<string>();
+            }
+            catch (Exception) {
+                // not a plain string — take the raw JSON of the first element
+                json = response.GetValue<JsonElement>().GetRawText();
+            }
+
+            var parsed = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json);
+            if (parsed == null)
+                return null;
+
+            var result = new Dictionary<string, string>();
+            foreach (var pair in parsed) {
+                result[pair.Key] = pair.Value.ValueKind == JsonValueKind.String
+                    ? (pair.Value.GetString() ?? "")
+                    : pair.Value.GetRawText();
+            }
             if (this.debug) {
-                Logger.log("[DEBUG] Parsed message (string):", result);
+                Logger.log("[DEBUG] Parsed message:", result);
             }
             return result;
         }
         catch (Exception ex) {
-            // OK, it is not a string, could be an JSON object then
-            try {
-                message = response.GetValue<object>();
-                if (null != message) {
-                    result = JsonSerializer.Deserialize<Dictionary<string, string>>(message.ToString());
-                    if (this.debug) {
-                        Logger.log("[DEBUG] Parsed message (object):", result);
-                    }
-                    return result;
-                }
-            }
-            catch (Exception ex_obj) {
-                Logger.error("Failed to get the message", ex_obj);
-            }
+            Logger.error("Failed to get the message", ex);
         }
-        return null; // new Dictionary<string, string>();
+        return null;
     }
 
     public void on(string eventName, Delegate callback) {

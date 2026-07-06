@@ -10,7 +10,11 @@ public class Program
 
     public async Task run() {
 
-        subscriber = new Subscriber("sample-subscriber");
+        // Server location can be overridden with TYO_MQ_HOST / TYO_MQ_PORT
+        string? host = Environment.GetEnvironmentVariable("TYO_MQ_HOST");
+        int port = int.TryParse(Environment.GetEnvironmentVariable("TYO_MQ_PORT"), out var p) ? p : -1;
+
+        subscriber = new Subscriber("sample-subscriber", host, port);
 
         // Enable debug mode to see all messages
         // subscriber.debug = true;

@@ -50,7 +50,11 @@ public class Program
 
     public async Task run() {
 
-        publisher = new Publisher(producerName, "s" /*the default event name*/);
+        // Server location can be overridden with TYO_MQ_HOST / TYO_MQ_PORT
+        string? host = Environment.GetEnvironmentVariable("TYO_MQ_HOST");
+        int port = int.TryParse(Environment.GetEnvironmentVariable("TYO_MQ_PORT"), out var p) ? p : -1;
+
+        publisher = new Publisher(producerName, "s" /*the default event name*/, host, port);
         await publisher.register(() => {
             Console.WriteLine("Connected");
         });
