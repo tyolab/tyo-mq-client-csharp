@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <PackageId>TYO_MQ_CLIENT</PackageId>
-    <Version>0.2.3</Version>
+    <Version>2.0.0</Version>
     <Authors>tyolab</Authors>
     <Company>TYO Lab</Company>
 
@@ -15,7 +15,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="SocketIOClient" Version="3.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="tyo-mq-client-tests" />
+  </ItemGroup>
 </Project>

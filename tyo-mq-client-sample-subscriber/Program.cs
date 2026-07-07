@@ -1,6 +1,5 @@
 ﻿using TYO_MQ_CLIENT;
 using System.Timers;
-using SocketIOClient;
 namespace TYO_MQ_CLIENT.Examples;
 
 public class Program
