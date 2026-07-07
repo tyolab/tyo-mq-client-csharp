@@ -1,12 +1,14 @@
 # tyo-mq-client-csharp
 
 A .NET client for **[tyo-mq](https://github.com/tyolab/tyo-mq)** — the
-distributed pub/sub messaging service with durable delivery, MQTT-style topic
-routing, consumer groups, and multi-tenant auth realms.
+distributed pub/sub messaging service with durable delivery (ACK / retry /
+dead-letter queue), MQTT-style topic wildcards, consumer groups, and
+multi-tenant auth realms.
 
-Targets .NET 8, built on [SocketIOClient](https://www.nuget.org/packages/SocketIOClient)
-(Socket.IO v4). Large messages are chunked automatically in both directions
-(256 KB frames), matching the Node.js client.
+Targets .NET 8. **No external dependencies** — the client ships its own
+Socket.IO v4 transport over `System.Net.WebSockets`. Large messages are
+chunked automatically in both directions (256 KB frames), matching the
+Node.js client.
 
 ## Install
 
@@ -18,69 +20,75 @@ You'll need a running tyo-mq server:
 `npm install tyo-mq && node -e "new (require('tyo-mq').Server)().start()"`,
 or Docker — see the [server repo](https://github.com/tyolab/tyo-mq).
 
-> **Note:** this client pins **SocketIOClient 3.0.6** — currently the only
-> version verified against the tyo-mq server. Later majors changed the EIO
-> option surface; upgrade deliberately and re-test.
-
 ## Quick start
 
-**Produce:**
-
 ```csharp
-using TYO_MQ_CLIENT;
+using System.Text.Json.Nodes;
+using TyoMq;
 
-var publisher = new Publisher("order-service", "order-placed" /* default event */);
-await publisher.register(() => Console.WriteLine("connected"));
+var producer = new Client("http://localhost:17352");
+await producer.ConnectAsync();
+// with auth enabled on the server:
+// await producer.AuthenticateAsync("my-token");
+await producer.RegisterProducerAsync("order-service");
+producer.Produce("order-service", "order-placed",
+    new JsonObject { ["orderId"] = 1001, ["total"] = 129.0 });
 
-publisher.produce("{\"orderId\": 1001}");               // default event
-publisher.produce("{\"orderId\": 1002}", "order-paid"); // named event
-```
-
-**Subscribe:**
-
-```csharp
-using TYO_MQ_CLIENT;
-
-var subscriber = new Subscriber("email-service");
-await subscriber.register(() => Console.WriteLine("connected"));
-
-subscriber.subscribe("order-service", "order-placed", (object msg) => {
-    Console.WriteLine($"received: {msg}");
+var consumer = new Client("http://localhost:17352");
+await consumer.ConnectAsync();
+await consumer.RegisterConsumerAsync("email-service");
+consumer.Subscribe(new SubscribeOptions
+{
+    Producer = "order-service",
+    Event = "order-placed",
+    Consumer = "email-service",
+    Durable = true,
+    Ack = true,   // auto-ACKed after the handler returns
+    Retry = new RetryPolicy { MaxAttempts = 3, Delay = "5s", Backoff = "exponential" },
+}, (message, from, ack, raw) =>
+{
+    Console.WriteLine($"order event from {from}: {message} (msgId: {raw["msgId"]})");
 });
-
-// or every event from that producer:
-subscriber.subscribe("order-service", (object msg) => { /* ... */ });
 ```
 
-Both `Publisher` and `Subscriber` accept `host` / `port` / `protocol`
-constructor arguments; the default is `localhost:17352`.
+With `ManualAck = true` (plus e.g. `AckTimeout = "30s"`) the handler must
+call its `ack` argument (or `client.Ack(msgId)`) itself; unacked deliveries
+retry per the policy and dead-letter when attempts are exhausted.
+
+## Topics, groups
+
+```csharp
+// MQTT-style wildcards: + is one level, # is the rest
+consumer.Subscribe(new SubscribeOptions
+{
+    Event = "orders/+/status", Consumer = "dashboard", Mode = "topic",
+}, handler);
+
+// consumer groups load-balance across workers
+consumer.Subscribe(new SubscribeOptions
+{
+    Producer = "dispatcher", Event = "jobs", Consumer = "worker-1", Group = "workers",
+}, handler);
+```
+
+Anything not covered by a helper is one `client.Emit(event, payload)` +
+`client.On(event, handler)` away — the full wire protocol is documented in
+the [server repo](https://github.com/tyolab/tyo-mq).
+
+## v1 compatibility
+
+The 1.x `TYO_MQ_CLIENT.Publisher` / `Subscriber` API still works — the
+classes are thin wrappers over `TyoMq.Client`, and v1 string-payload
+semantics are preserved. New code should use `TyoMq.Client`.
 
 ## Runnable samples
-
-The solution includes a sample producer and subscriber:
 
 ```bash
 dotnet run --project tyo-mq-client-sample-subscriber/tyo-mq-client-sample-subscriber.csproj
 dotnet run --project tyo-mq-client-sample-producer/tyo-mq-client-sample-producer.csproj
 ```
 
-Point them at a non-default server with environment variables:
-
-```bash
-TYO_MQ_HOST=10.0.0.5 TYO_MQ_PORT=17390 dotnet run --project ...
-```
-
-The producer publishes a timestamped message every second; the subscriber
-prints everything it receives.
-
-## Server features
-
-Durable delivery with ACK/retry/dead-lettering, topic wildcards, consumer
-groups, broadcast, and authentication realms are provided by the server and
-addressed through the wire protocol — see the
-[server documentation](https://github.com/tyolab/tyo-mq) for the message
-formats. This client currently covers the core produce/subscribe flow;
-the richer options are being brought over (contributions welcome).
+Point them at a non-default server with `TYO_MQ_HOST` / `TYO_MQ_PORT`.
 
 ## Other clients
 
@@ -100,4 +108,4 @@ resulting matrix.
 
 ## License
 
-MIT (see LICENSE). Built by [TYO Lab](https://tyo.com.au).
+Apache-2.0. Built by [TYO Lab](https://tyo.com.au).
