@@ -108,4 +108,4 @@ resulting matrix.
 
 ## License
 
-Apache-2.0. Built by [TYO Lab](https://tyo.com.au).
+MIT (see LICENSE). Built by [TYO Lab](https://tyo.com.au).
