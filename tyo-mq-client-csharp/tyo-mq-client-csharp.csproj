@@ -18,4 +18,7 @@
     <PackageReference Include="SocketIOClient" Version="3.0.6" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="tyo-mq-client-tests" />
+  </ItemGroup>
 </Project>
